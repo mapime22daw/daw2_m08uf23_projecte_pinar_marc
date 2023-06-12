@@ -1,0 +1,47 @@
+<?php
+require 'vendor/autoload.php';
+use Laminas\Ldap\Ldap;
+
+// Configuració de la connexió LDAP
+$opcions = [
+	'host' => 'zend-mapime.fjeclot.net',
+	'username' => "cn=admin,dc=fjeclot,dc=net",
+	'password' => 'fjeclot',
+	'bindRequiresDn' => true,
+	'accountDomainName' => 'fjeclot.net',
+	'baseDn' => 'dc=fjeclot,dc=net',
+];
+$ldap = new Ldap($opcions);
+
+// Processament del formulari
+if ($_POST['uid']){
+	// Generació del DN del nou usuari
+	$dn = 'uid='.$_POST['uid'].',ou='.$_POST['ou'].',dc=fjeclot,dc=net';
+
+	// Creació de l'array d'atributs de l'usuari
+	$entrada = [
+		'objectclass' => ['top', 'person', 'organizationalPerson', 'inetOrgPerson', 'posixAccount', 'shadowAccount'],
+		'cn' => $_POST['cn'],
+		'sn' => $_POST['sn'],
+		'givenName' => $_POST['givenName'],
+		'uid' => $_POST['uid'],
+		'uidNumber' => $_POST['uidNumber'],
+		'gidNumber' => $_POST['gidNumber'],
+		'homeDirectory' => $_POST['homeDirectory'],
+		'loginShell' => $_POST['loginShell'],
+		'postalAddress' => $_POST['postalAddress'],
+		'mobile' => $_POST['mobile'],
+		'title' => $_POST['title'],
+		'description' => $_POST['description'],
+	];
+
+	// Afegir l'entrada LDAP per al nou usuari
+	try {
+		$ldap->add($dn, $entrada);
+		echo "Usuari afegit correctament a LDAP.<br>";
+		echo '<a href="http://zend-mapime.fjeclot.net/proj_m08uf23/menu.php">Torna al menu</a>';
+	} catch (Exception $e){
+		echo "Error al afegir l'usuari a LDAP: " . $e->getMessage();
+	}
+}
+?>
